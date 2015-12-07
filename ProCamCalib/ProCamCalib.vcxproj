@@ -29,6 +29,7 @@
     <ClInclude Include="Graycode.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="PGROpenCV.h" />
+    <ClInclude Include="WebCamera.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{64854B7C-869A-478E-8E21-EA42A72AD28F}</ProjectGuid>
