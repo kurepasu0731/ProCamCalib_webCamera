@@ -14,10 +14,11 @@
 #include <iomanip>  // 文字列ストリーム
 #include <direct.h> // create dir
 #include "Header.h"
-#include "PGROpenCV.h"
+//#include "PGROpenCV.h"
+#include "WebCamera.h"
 
 
-extern TPGROpenCV pgrOpenCV;
+//extern TPGROpenCV pgrOpenCV;
 
 /** 
 @brief GrayCodeを用いた幾何補正<br>
@@ -26,6 +27,8 @@ extern TPGROpenCV pgrOpenCV;
 */
 class GRAYCODE{
 public:
+	WebCamera webcamera;
+
 	// プロジェクタ解像度
 	static const int PRJ_WIDTH = PROJECTOR_WIDTH;
 	static const int PRJ_HEIGHT = PROJECTOR_HEIGHT;
@@ -52,7 +55,7 @@ public:
 
 	correspondence *c;
 
-	GRAYCODE();
+	GRAYCODE(WebCamera camera);
 	~GRAYCODE();
 	// パターンコード投影 & 撮影
 	void code_projection();

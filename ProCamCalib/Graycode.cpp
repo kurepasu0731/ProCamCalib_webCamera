@@ -1,7 +1,8 @@
 #include "Graycode.h"
 
-GRAYCODE::GRAYCODE()
+GRAYCODE::GRAYCODE(WebCamera camera)
 {
+	webcamera = camera;
 	GC = "Graycode";
 	MP = "Measure";
 	delay = 200;
@@ -140,8 +141,8 @@ void GRAYCODE::code_projection()
 	//初期化&カメラ起動
 	initGraycode();
 	//pgrOpenCV.init( FlyCapture2::PIXEL_FORMAT_BGR );
-	pgrOpenCV.setShutterSpeed(pgrOpenCV.getShutter_h());
-	pgrOpenCV.start();
+	//pgrOpenCV.setShutterSpeed(pgrOpenCV.getShutter_h());
+	//pgrOpenCV.start();
 
 	cv::Mat *posi_img = new cv::Mat[c->g.all_bit];  // ポジパターン用
 	cv::Mat *nega_img = new cv::Mat[c->g.all_bit];  // ネガパターン用
@@ -188,11 +189,13 @@ void GRAYCODE::code_projection()
 		// 遅延待ち
 		cv::waitKey(2.0*delay);
 		// 撮影
-		pgrOpenCV.queryFrame();
+		//pgrOpenCV.queryFrame();
 		// 撮影画像をMat型に格納
-		cv::Mat cap = pgrOpenCV.getVideo();
+		//cv::Mat cap = pgrOpenCV.getVideo();
+		cv::Mat cap = webcamera.getFrame();
 		// 撮影の様子をチェック
-		pgrOpenCV.showCapImg(cap);
+		//pgrOpenCV.showCapImg(cap);
+		webcamera.idle();
 
 		// ポジパターン撮影結果を保存
 		// 横縞
@@ -202,7 +205,8 @@ void GRAYCODE::code_projection()
 		else
 			Filename_posi_cam[i] << "./GrayCodeImage/CaptureImage/CameraImg" << VERTICAL << "_" << std::setw(2) << std::setfill('0') << i-c->g.h_bit+1 << "_" << POSI << ".bmp"; 
 		// 保存
-		cv::imwrite(Filename_posi_cam[i].str(), pgrOpenCV.getVideo());
+		//cv::imwrite(Filename_posi_cam[i].str(), pgrOpenCV.getVideo());
+		cv::imwrite(Filename_posi_cam[i].str(), webcamera.getFrame());
 		Filename_posi_cam[i] << std::endl;
 	}
 
@@ -214,11 +218,13 @@ void GRAYCODE::code_projection()
 		// 遅延待ち
 		cv::waitKey(2*delay);
 		// 撮影
-		pgrOpenCV.queryFrame();
+		//pgrOpenCV.queryFrame();
 		// 撮影画像をMat型に格納
-		cv::Mat cap = pgrOpenCV.getVideo();
+		//cv::Mat cap = pgrOpenCV.getVideo();
+		cv::Mat cap = webcamera.getFrame();
 		// 撮影の様子をチェック
-		pgrOpenCV.showCapImg(cap);
+		//pgrOpenCV.showCapImg(cap);
+		webcamera.idle();
 		// ポジパターン撮影結果を保持
 		// 横縞
 		if(i < c->g.h_bit)
@@ -227,7 +233,8 @@ void GRAYCODE::code_projection()
 		else
 			Filename_nega_cam[i] << "./GrayCodeImage/CaptureImage/CameraImg" << VERTICAL << "_" << std::setw(2) << std::setfill('0') << i-c->g.h_bit+1 << "_" << NEGA << ".bmp"; 
 		//Filename_nega_cam[i] << "./output/Camera_nega" << std::setw(2) << std::setfill('0') << i << ".bmp";
-		cv::imwrite(Filename_nega_cam[i].str(), pgrOpenCV.getVideo());
+		//cv::imwrite(Filename_nega_cam[i].str(), pgrOpenCV.getVideo());
+		cv::imwrite(Filename_nega_cam[i].str(), webcamera.getFrame());
 		Filename_nega_cam[i] << std::endl;
 	}
 	/***** 投影 & 撮影終了 *****/
@@ -236,11 +243,12 @@ void GRAYCODE::code_projection()
 	cv::Mat src = cv::Mat(PROJECTOR_WIDTH, PROJECTOR_HEIGHT, CV_8UC3, cv::Scalar(255, 255, 255));
 	cv::imshow(GC, src);
 	cv::waitKey(2*delay);
-	pgrOpenCV.queryFrame();
-	cv::imwrite("./cap.jpg", pgrOpenCV.getVideo());
+	//pgrOpenCV.queryFrame();
+	//cv::imwrite("./cap.jpg", pgrOpenCV.getVideo());
+	cv::imwrite("./cap.jpg", webcamera.getFrame());
 
 	// カメラ終了処理
-	pgrOpenCV.stop();
+	//pgrOpenCV.stop();
 
 	/**** 終了 *****/
 

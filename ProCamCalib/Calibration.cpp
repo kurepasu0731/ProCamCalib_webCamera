@@ -114,7 +114,7 @@ void Calibration::proCamCalibration(const std::vector<std::vector<cv::Point3f>> 
 
 	// ステレオ最適化
 	double stereo_error = cv::stereoCalibrate(worldPoints, cameraPoints, projectorPoints, cam_K, cam_dist, proj_K, proj_dist, camSize, R, T, E, F, 
-                                                /*cv::CALIB_FIX_INTRINSIC*/ cv::CALIB_USE_INTRINSIC_GUESS+cv::CALIB_FIX_K3, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 200, DBL_EPSILON));
+                                                /*cv::CALIB_FIX_INTRINSIC*/  cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 200, DBL_EPSILON), cv::CALIB_USE_INTRINSIC_GUESS+cv::CALIB_FIX_K3);
 
 	// 最適化後の再投影誤差の計算
 	double cam_error2 = 0;

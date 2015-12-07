@@ -1,7 +1,8 @@
 
 #include "Graycode.h"
 #include "Header.h"
-#include "PGROpenCV.h"
+//#include "PGROpenCV.h"
+//#include "WebCamera.h"
 #include "Calibration.h"
 
 
@@ -10,13 +11,12 @@
 #define SAVE_DIRECTORY "./UseImage/resize"
 
 
-TPGROpenCV	pgrOpenCV;
+//TPGROpenCV	pgrOpenCV;
 
 void eular2rot(double yaw,double pitch, double roll, cv::Mat& dest);
 
 int main()
 {
-	GRAYCODE gc;
 
 	printf("0：ProCam間の幾何対応を取得\n");
 	printf("1：今まで取得した幾何対応からProCamキャリブレーション\n");
@@ -29,8 +29,10 @@ int main()
 	printf("w：待機時に白画像を投影するかしないか\n");
 	printf("\n");
 
-	pgrOpenCV.init( FlyCapture2::PIXEL_FORMAT_BGR );
+//	pgrOpenCV.init( FlyCapture2::PIXEL_FORMAT_BGR );
 	//pgrOpenCV.setCameraParams(4.0);
+	WebCamera webcamera(640, 480, "WebCamera");
+	GRAYCODE gc(webcamera);
 
 	// カメラ画像確認用
 	char windowNameCamera[] = "camera";
@@ -55,7 +57,7 @@ int main()
 		int command;
 
 		// 白い画像を全画面で投影（撮影環境を確認しやすくするため）
-		pgrOpenCV.start();
+		//pgrOpenCV.start();
 		cv::Mat cam, cam2;
 		while(true){
 			// trueで白を投影、falseで通常のディスプレイを表示
@@ -70,8 +72,9 @@ int main()
 			command = cv::waitKey(33);
 			if ( command > 0 ) break;
 
-			pgrOpenCV.queryFrame();
-			cam = pgrOpenCV.getVideo();
+			//pgrOpenCV.queryFrame();
+			//cam = pgrOpenCV.getVideo();
+			cam = webcamera.getFrame();
 			cam.copyTo(cam2);
 
 			//見やすいように適当にリサイズ
@@ -80,7 +83,7 @@ int main()
 		}
 
 		// カメラを止める
-		pgrOpenCV.stop();
+		//pgrOpenCV.stop();
 		cv::destroyWindow("white_black");
 
 		// 条件分岐
@@ -234,7 +237,7 @@ int main()
 				cv::Mat cam_perspective = calib.getCamPerspectiveMat();
 				cv::Mat proj_perspective = calib.getProjPerspectiveMat();
 
-				pgrOpenCV.start();
+				//pgrOpenCV.start();
 				cv::Mat white = cv::Mat(PROJECTOR_HEIGHT, PROJECTOR_WIDTH, CV_8UC3, cv::Scalar(255, 255, 255));
 				cv::Mat proj_img = cv::Mat(PROJECTOR_HEIGHT, PROJECTOR_WIDTH, CV_8UC3, cv::Scalar(255, 255, 255));
 				while(true){
@@ -246,8 +249,9 @@ int main()
 					command = cv::waitKey(33);
 					if ( command > 0 ) break;
 
-					pgrOpenCV.queryFrame();
-					cam = pgrOpenCV.getVideo();
+					//pgrOpenCV.queryFrame();
+					//cam = pgrOpenCV.getVideo();
+					cam = webcamera.getFrame();
 					
 					// チェッカーパターンの交点を描画(カメラ)
 					cv::Mat cam3;
@@ -296,7 +300,7 @@ int main()
 				}
 
 				// カメラを止める
-				pgrOpenCV.stop();
+				//pgrOpenCV.stop();
 				cv::destroyWindow("white_black");
 
 

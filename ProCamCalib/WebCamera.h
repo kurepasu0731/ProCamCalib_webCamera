@@ -40,7 +40,7 @@ public:
 		height = _height;
 		winName = _winName;
 		//vc = cv::VideoCapture(0);
-		save_dir = "./Image/capture/";
+		save_dir = "./capture/";
 		capture_num = getStoredImage(save_dir);
 		calib_flag = false;
 		cv::Size captureSize(width, height);
@@ -87,6 +87,12 @@ public:
 		std::string filename = save_dir + "cap"+ std::to_string(capture_num) + ".jpg";
 		cv::imwrite(filename, frame);
 		capture_num++;
+	}
+
+	cv::Mat getFrame()
+	{
+		vc >> frame;
+		return frame;
 	}
 
 	/***** キャリブレーション関係 *****/
