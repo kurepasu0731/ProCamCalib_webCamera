@@ -39,13 +39,13 @@ public:
 		width = _width;
 		height = _height;
 		winName = _winName;
-		//vc = cv::VideoCapture(0);
+		vc = cv::VideoCapture(0);
 		save_dir = "./capture/";
 		capture_num = getStoredImage(save_dir);
 		calib_flag = false;
 		cv::Size captureSize(width, height);
-		//vc.set(CV_CAP_PROP_FRAME_WIDTH, captureSize.width);
-		//vc.set(CV_CAP_PROP_FRAME_HEIGHT, captureSize.height);
+		vc.set(CV_CAP_PROP_FRAME_WIDTH, captureSize.width);
+		vc.set(CV_CAP_PROP_FRAME_HEIGHT, captureSize.height);
 		cv::namedWindow(winName);
 
 
