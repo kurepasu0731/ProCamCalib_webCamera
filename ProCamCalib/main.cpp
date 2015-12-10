@@ -31,7 +31,7 @@ int main()
 
 //	pgrOpenCV.init( FlyCapture2::PIXEL_FORMAT_BGR );
 	//pgrOpenCV.setCameraParams(4.0);
-	WebCamera webcamera(640, 480, "WebCamera");
+	WebCamera webcamera(CAMERA_WIDTH, CAMERA_HEIGHT, "WebCamera");
 	GRAYCODE gc(webcamera);
 
 	// カメラ画像確認用
@@ -43,7 +43,7 @@ int main()
 
 
 	// キャリブレーション用
-	Calibration calib(10, 7, 24.0);
+	Calibration calib(10, 7, 48.0);
 	std::vector<std::vector<cv::Point3f>>	worldPoints;
 	std::vector<std::vector<cv::Point2f>>	cameraPoints;
 	std::vector<std::vector<cv::Point2f>>	projectorPoints;
