@@ -290,7 +290,7 @@ void Calibration::getCameraWorldPoint(std::vector<cv::Point3f> &camWorldPoint, c
 
 
 // 3次元復元
-void Calibration::reconstruction(std::vector<cv::Point3f> &reconstructPoint, const std::vector<cv::Point2f> &projPoint, const std::vector<cv::Point2f> &imagePoint)
+void Calibration::reconstruction(std::vector<cv::Point3f> &reconstructPoint, const std::vector<cv::Point2f> &projPoint, const std::vector<cv::Point2f> &imagePoint, const std::vector<int> &flag)
 {
 	// 透視投影変換行列
 	cv::Mat cam_pers = getCamPerspectiveMat();
@@ -304,26 +304,33 @@ void Calibration::reconstruction(std::vector<cv::Point3f> &reconstructPoint, con
 	// object spaceの最小化による3次元復元
 	for(int i=0; i<projPoint.size(); ++i)
 	{
-		f.at<double>(0, 0) = imagePoint[i].x * cam_pers.at<double>(2, 3) - cam_pers.at<double>(0, 3);
-		f.at<double>(1, 0) = imagePoint[i].y * cam_pers.at<double>(2, 3) - cam_pers.at<double>(1, 3);
-		f.at<double>(2, 0) = projPoint[i].x * proj_pers.at<double>(2, 3) - proj_pers.at<double>(0, 3);
-		f.at<double>(3, 0) = projPoint[i].y * proj_pers.at<double>(2, 3) - proj_pers.at<double>(1, 3);
+		if(flag[i] == 1)
+		{
+			f.at<double>(0, 0) = imagePoint[i].x * cam_pers.at<double>(2, 3) - cam_pers.at<double>(0, 3);
+			f.at<double>(1, 0) = imagePoint[i].y * cam_pers.at<double>(2, 3) - cam_pers.at<double>(1, 3);
+			f.at<double>(2, 0) = projPoint[i].x * proj_pers.at<double>(2, 3) - proj_pers.at<double>(0, 3);
+			f.at<double>(3, 0) = projPoint[i].y * proj_pers.at<double>(2, 3) - proj_pers.at<double>(1, 3);
 
-		q.at<double>(0, 0) = cam_pers.at<double>(0, 0) - cam_pers.at<double>(2, 0) * imagePoint[i].x;
-		q.at<double>(0, 1) = cam_pers.at<double>(0, 1) - cam_pers.at<double>(2, 1) * imagePoint[i].x;
-		q.at<double>(0, 2) = cam_pers.at<double>(0, 2) - cam_pers.at<double>(2, 2) * imagePoint[i].x;
-		q.at<double>(1, 0) = cam_pers.at<double>(1, 0) - cam_pers.at<double>(2, 0) * imagePoint[i].y;
-		q.at<double>(1, 1) = cam_pers.at<double>(1, 1) - cam_pers.at<double>(2, 1) * imagePoint[i].y;
-		q.at<double>(1, 2) = cam_pers.at<double>(1, 2) - cam_pers.at<double>(2, 2) * imagePoint[i].y;
-		q.at<double>(2, 0) = proj_pers.at<double>(0, 0) - proj_pers.at<double>(2, 0) * projPoint[i].x;
-		q.at<double>(2, 1) = proj_pers.at<double>(0, 1) - proj_pers.at<double>(2, 1) * projPoint[i].x;
-		q.at<double>(2, 2) = proj_pers.at<double>(0, 2) - proj_pers.at<double>(2, 2) * projPoint[i].x;
-		q.at<double>(3, 0) = proj_pers.at<double>(1, 0) - proj_pers.at<double>(2, 0) * projPoint[i].y;
-		q.at<double>(3, 1) = proj_pers.at<double>(1, 1) - proj_pers.at<double>(2, 1) * projPoint[i].y;
-		q.at<double>(3, 2) = proj_pers.at<double>(1, 2) - proj_pers.at<double>(2, 2) * projPoint[i].y;
+			q.at<double>(0, 0) = cam_pers.at<double>(0, 0) - cam_pers.at<double>(2, 0) * imagePoint[i].x;
+			q.at<double>(0, 1) = cam_pers.at<double>(0, 1) - cam_pers.at<double>(2, 1) * imagePoint[i].x;
+			q.at<double>(0, 2) = cam_pers.at<double>(0, 2) - cam_pers.at<double>(2, 2) * imagePoint[i].x;
+			q.at<double>(1, 0) = cam_pers.at<double>(1, 0) - cam_pers.at<double>(2, 0) * imagePoint[i].y;
+			q.at<double>(1, 1) = cam_pers.at<double>(1, 1) - cam_pers.at<double>(2, 1) * imagePoint[i].y;
+			q.at<double>(1, 2) = cam_pers.at<double>(1, 2) - cam_pers.at<double>(2, 2) * imagePoint[i].y;
+			q.at<double>(2, 0) = proj_pers.at<double>(0, 0) - proj_pers.at<double>(2, 0) * projPoint[i].x;
+			q.at<double>(2, 1) = proj_pers.at<double>(0, 1) - proj_pers.at<double>(2, 1) * projPoint[i].x;
+			q.at<double>(2, 2) = proj_pers.at<double>(0, 2) - proj_pers.at<double>(2, 2) * projPoint[i].x;
+			q.at<double>(3, 0) = proj_pers.at<double>(1, 0) - proj_pers.at<double>(2, 0) * projPoint[i].y;
+			q.at<double>(3, 1) = proj_pers.at<double>(1, 1) - proj_pers.at<double>(2, 1) * projPoint[i].y;
+			q.at<double>(3, 2) = proj_pers.at<double>(1, 2) - proj_pers.at<double>(2, 2) * projPoint[i].y;
 
-		v = q.inv(cv::DECOMP_SVD) * f;
-		reconstructPoint.emplace_back(cv::Point3f(v.at<double>(0, 0), v.at<double>(1, 0), v.at<double>(2, 0)));
+			v = q.inv(cv::DECOMP_SVD) * f;
+			reconstructPoint.emplace_back(cv::Point3f(v.at<double>(0, 0), v.at<double>(1, 0), v.at<double>(2, 0)));
+		}
+		else
+		{
+			reconstructPoint.emplace_back(cv::Point3f(-1, -1, -1));
+		}
 	}
 }
 
@@ -333,11 +340,12 @@ void Calibration::pointCloudRender(const std::vector<cv::Point3f> &reconstructPo
 								std::string &windowName, const cv::Mat& R, const cv::Mat& t)
 {
 
-	cv::Mat viewer(CAMERA_HEIGHT, CAMERA_WIDTH, CV_8UC3, cv::Scalar(0));
+	//cv::Mat viewer(CAMERA_HEIGHT, CAMERA_WIDTH, CV_8UC3, cv::Scalar(0));
+	cv::Mat viewer(PROJECTOR_HEIGHT, PROJECTOR_WIDTH, CV_8UC3, cv::Scalar(0));
 
 	// 2次元平面へ投影
 	std::vector<cv::Point2f> pt;
-    cv::projectPoints(reconstructPoint, R, t, cam_K, cv::Mat(), pt); 
+    cv::projectPoints(reconstructPoint, R, t, proj_K, cv::Mat(), pt); 
 	
 	// 疑似Zバッファ
 	cv::Mat z_buffer(CAMERA_HEIGHT, CAMERA_WIDTH, CV_64F, cv::Scalar(0.0));
@@ -359,8 +367,11 @@ void Calibration::pointCloudRender(const std::vector<cv::Point3f> &reconstructPo
 		{
 			if(z_buffer.at<double>(pt_y,pt_x) == 0.0 || z_buffer.at<double>(pt_y,pt_x) > reconstructPoint[i].z )
 			{
-				int image_x = (int)(imagePoint[i].x+0.5);
-				int image_y = (int)(imagePoint[i].y+0.5);
+				//int image_x = (int)(imagePoint[i].x+0.5);
+				//int image_y = (int)(imagePoint[i].y+0.5);
+				//カメラ画素上の色を付ける
+				int image_x = i % CAMERA_WIDTH;
+				int image_y = (int)(i / CAMERA_WIDTH);
 
 				viewer.at<uchar>(pt_y, 3*pt_x+0) = image.at<uchar>(image_y, 3*image_x+0);
 				viewer.at<uchar>(pt_y, 3*pt_x+1) = image.at<uchar>(image_y, 3*image_x+1);

@@ -421,11 +421,13 @@ int main()
 				gc.make_thresh();
 				gc.makeCorrespondence();
 
-				// 対応点の取得
+				//***対応点の取得(プロジェクタ画素→3次元点)******************************************
 				std::vector<cv::Point2f> imagePoint;
 				std::vector<cv::Point2f> projPoint;
+				std::vector<int> isValid; //有効な対応点かどうかのフラグ
 				std::vector<cv::Point3f> reconstructPoint;
-				gc.getCorrespondAllPoints(projPoint, imagePoint);
+				gc.getCorrespondAllPoints(projPoint, imagePoint, isValid);
+				//gc.getCorrespondAllPoints_ProCam(projPoint, imagePoint);
 
 				// 対応点の歪み除去
 				std::vector<cv::Point2f> undistort_imagePoint;
@@ -434,14 +436,113 @@ int main()
 				cv::undistortPoints(projPoint, undistort_projPoint, calib.proj_K, calib.proj_dist);
 				for(int i=0; i<imagePoint.size(); ++i)
 				{
-					undistort_imagePoint[i].x = undistort_imagePoint[i].x * calib.cam_K.at<double>(0,0) + calib.cam_K.at<double>(0,2);
-					undistort_imagePoint[i].y = undistort_imagePoint[i].y * calib.cam_K.at<double>(1,1) + calib.cam_K.at<double>(1,2);
-					undistort_projPoint[i].x = undistort_projPoint[i].x * calib.proj_K.at<double>(0,0) + calib.proj_K.at<double>(0,2);
-					undistort_projPoint[i].y = undistort_projPoint[i].y * calib.proj_K.at<double>(1,1) + calib.proj_K.at<double>(1,2);
+					if(isValid[i] == 1)
+					{
+						undistort_imagePoint[i].x = undistort_imagePoint[i].x * calib.cam_K.at<double>(0,0) + calib.cam_K.at<double>(0,2);
+						undistort_imagePoint[i].y = undistort_imagePoint[i].y * calib.cam_K.at<double>(1,1) + calib.cam_K.at<double>(1,2);
+						undistort_projPoint[i].x = undistort_projPoint[i].x * calib.proj_K.at<double>(0,0) + calib.proj_K.at<double>(0,2);
+						undistort_projPoint[i].y = undistort_projPoint[i].y * calib.proj_K.at<double>(1,1) + calib.proj_K.at<double>(1,2);
+					}
+					else
+					{
+						undistort_imagePoint[i].x = -1;
+						undistort_imagePoint[i].y = -1;
+						undistort_projPoint[i].x = -1;
+						undistort_projPoint[i].y = -1;
+					}
+				}
+
+				////エピポーラ方程式が成り立つか確認
+				//for(int i =0; i < undistort_imagePoint.size(); i++)
+				//{
+				//	if(isValid[i] == 1)
+				//	{
+				//		cv::Mat cp = (cv::Mat_<double>(3, 1) << (double)undistort_imagePoint.at(i).x,  (double)undistort_imagePoint.at(i).y,  1);
+				//		cv::Mat pp = (cv::Mat_<double>(3, 1) << (double)undistort_projPoint.at(i).x,  (double)undistort_projPoint.at(i).y,  1);
+				//		cv::Mat projK_inv_t = calib.proj_K.inv().t();
+				//		cv::Mat tx = (cv::Mat_<double>(3, 3) << 0, -calib.T.at<double>(2,0), calib.T.at<double>(1,0), calib.T.at<double>(2,0), 0, -calib.T.at<double>(0,0), -calib.T.at<double>(1,0), calib.T.at<double>(0,0), 0);
+				//		cv::Mat e = pp.t() * projK_inv_t * tx * calib.R * calib.cam_K.inv() * cp;
+				//		double error = e.at<double>(0, 0);
+				//		std::cout << "e[" << i << "] = " << error << std::endl; 
+				//	}
+				//}
+
+				// 3次元復元
+				calib.reconstruction(reconstructPoint, undistort_projPoint, undistort_imagePoint, isValid);
+
+				//==保存==//
+				cv::FileStorage fs("./reconstructPoints_proj.xml", cv::FileStorage::WRITE);
+				//プロジェクタ画素→3次元点
+				write(fs, "points", reconstructPoint);
+				std::cout << "pro->3d points saved." << std::endl;
+
+				//**********************************************************************************
+
+				//***対応点の取得(カメラ画素→3次元点)******************************************
+				std::vector<cv::Point2f> imagePoint_camera;
+				std::vector<cv::Point2f> projPoint_camera;
+				std::vector<int> isValid_camera; //有効な対応点かどうかのフラグ
+				std::vector<cv::Point3f> reconstructPoint_camera;
+				gc.getCorrespondAllPoints_ProCam(projPoint_camera, imagePoint_camera, isValid_camera);
+
+				// 対応点の歪み除去
+				std::vector<cv::Point2f> undistort_imagePoint_camera;
+				std::vector<cv::Point2f> undistort_projPoint_camera;
+				cv::undistortPoints(imagePoint_camera, undistort_imagePoint_camera, calib.cam_K, calib.cam_dist);
+				cv::undistortPoints(projPoint_camera, undistort_projPoint_camera, calib.proj_K, calib.proj_dist);
+				for(int i=0; i<imagePoint_camera.size(); ++i)
+				{
+					if(isValid_camera[i] == 1)
+					{
+						undistort_imagePoint_camera[i].x = undistort_imagePoint_camera[i].x * calib.cam_K.at<double>(0,0) + calib.cam_K.at<double>(0,2);
+						undistort_imagePoint_camera[i].y = undistort_imagePoint_camera[i].y * calib.cam_K.at<double>(1,1) + calib.cam_K.at<double>(1,2);
+						undistort_projPoint_camera[i].x = undistort_projPoint_camera[i].x * calib.proj_K.at<double>(0,0) + calib.proj_K.at<double>(0,2);
+						undistort_projPoint_camera[i].y = undistort_projPoint_camera[i].y * calib.proj_K.at<double>(1,1) + calib.proj_K.at<double>(1,2);
+					}
+					else
+					{
+						undistort_imagePoint_camera[i].x = -1;
+						undistort_imagePoint_camera[i].y = -1;
+						undistort_projPoint_camera[i].x = -1;
+						undistort_projPoint_camera[i].y = -1;
+					}
 				}
 
 				// 3次元復元
-				calib.reconstruction(reconstructPoint, undistort_projPoint, undistort_imagePoint);
+				calib.reconstruction(reconstructPoint_camera, undistort_projPoint_camera, undistort_imagePoint_camera, isValid_camera);
+
+				//==保存==//
+				cv::FileStorage fs_camera("./reconstructPoints_camera.xml", cv::FileStorage::WRITE);
+				//プロジェクタ画素→3次元点
+				write(fs_camera, "points", reconstructPoint_camera);
+				std::cout << "camera->3d points saved." << std::endl;
+
+				//**********************************************************************************
+
+/*
+				//カメラ画素→3次元点
+				std::vector<cv::Point3f> reconstructPoint_camera;
+				for( int y = 0; y < CAMERA_HEIGHT; y++ ) {
+					for( int x = 0; x < CAMERA_WIDTH; x++ ) {
+						cv::Point pp = gc.c->ProCam[y][x];
+						if(pp.x != -1) //プロジェクタの投影範囲内に入っていたら、3次元点を取得する
+						{
+							int index = pp.y * PROJECTOR_WIDTH + pp.x;
+							reconstructPoint_camera.emplace_back(reconstructPoint.at(index));
+						}else
+						{
+							reconstructPoint_camera.emplace_back(cv::Point3f(-1, -1, -1));
+						}
+					}
+				}
+				//保存
+				cv::FileStorage fs_c("./reconstructPoints_camera.xml", cv::FileStorage::WRITE);
+				//カメラ画素→3次元点
+				write(fs_c, "points", reconstructPoint_camera);
+				std::cout << "cam->3d points saved." << std::endl;
+*/
+
+
 
 				// 描画
 				cv::Mat R = cv::Mat::eye(3,3,CV_64F);
@@ -454,7 +555,7 @@ int main()
 				// キーボード操作
 				while(true)
 				{
-					// 回転の更新
+					//// 回転の更新
 					double x=(lookatpoint.x-viewpoint.x);
 					double y=(lookatpoint.y-viewpoint.y);
 					double z=(lookatpoint.z-viewpoint.z);
@@ -466,7 +567,16 @@ int main()
 					t.at<double>(1,0)=viewpoint.y;
 					t.at<double>(2,0)=viewpoint.z;
 
+					//プロジェクタ画素→3次元点
 					calib.pointCloudRender(reconstructPoint, imagePoint, cam2, std::string("viewer"), R, t);
+					//カメラ画素→3次元点
+					//ノイズ付加
+					//cv::Mat R_noise = (cv::Mat_<double>(3, 3) << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1);
+					//cv::Mat T_noise = (cv::Mat_<double>(3, 1) << 0.1, 0.1, 0.1);
+					//cv::Mat eR = calib.R + R_noise;
+					//cv::Mat eT = calib.T + T_noise;
+					//calib.pointCloudRender(reconstructPoint_camera, projPoint_camera, cam2, std::string("viewer"), calib.R, calib.T);
+
 
 					key = cv::waitKey(0);
 					if(key=='w')

@@ -5,7 +5,7 @@ GRAYCODE::GRAYCODE(WebCamera camera)
 	webcamera = camera;
 	GC = "Graycode";
 	MP = "Measure";
-	delay = 200;
+	delay = 200; //ここを小さくして、frameをいっぱい読み込む(新しいのを読む)と、グレイコード投影が早くなる
 	g = new Graycode();
 	c = new correspondence();
 	c->code_map = new std::map<int, cv::Point>();
@@ -666,14 +666,41 @@ void GRAYCODE::getCorrespondSubPixelProjPoints(std::vector<cv::Point2f> &projPoi
 
 
 // 対応のとれた点を全て返す
-void GRAYCODE::getCorrespondAllPoints(std::vector<cv::Point2f> &projPoint, std::vector<cv::Point2f> &imagePoint)
+void GRAYCODE::getCorrespondAllPoints(std::vector<cv::Point2f> &projPoint, std::vector<cv::Point2f> &imagePoint, std::vector<int> &flag) 
 {
 	for( int y = 0; y < PRJ_HEIGHT; y++ ) {
 		for( int x = 0; x < PRJ_WIDTH; x++ ) {
 			cv::Point p = c->CamPro[y][x];
 			if( p.x != -1 ) {
+				flag.emplace_back(1);
 				projPoint.emplace_back(cv::Point2f(x, y));
 				imagePoint.emplace_back(cv::Point2f(p.x, p.y));
+			}
+			else
+			{
+				flag.emplace_back(0);
+				projPoint.emplace_back(cv::Point2f(-1, -1));
+				imagePoint.emplace_back(cv::Point2f(-1, -1));
+			}
+		}
+	}
+}
+
+void GRAYCODE::getCorrespondAllPoints_ProCam(std::vector<cv::Point2f> &projPoint, std::vector<cv::Point2f> &imagePoint, std::vector<int> &flag) 
+{
+	for( int y = 0; y < CAMERA_HEIGHT; y++ ) {
+		for( int x = 0; x < CAMERA_WIDTH; x++ ) {
+			cv::Point p = c->ProCam[y][x];
+			if( p.x != -1 ) {
+				flag.emplace_back(1);
+				projPoint.emplace_back(cv::Point2f(p.x, p.y));
+				imagePoint.emplace_back(cv::Point2f(x, y));
+			}
+			else
+			{
+				flag.emplace_back(0);
+				projPoint.emplace_back(cv::Point2f(-1, -1));
+				imagePoint.emplace_back(cv::Point2f(-1, -1));
 			}
 		}
 	}

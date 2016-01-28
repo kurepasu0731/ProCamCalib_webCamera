@@ -44,7 +44,7 @@ public:
 	void getCameraWorldPoint(std::vector<cv::Point3f> &camWorldPoint, const std::vector<cv::Point2f> &imagePoint);
 
 	// 3ŽŸŒ³•œŒ³
-	void reconstruction(std::vector<cv::Point3f> &reconstructPoint, const std::vector<cv::Point2f> &projPoint, const std::vector<cv::Point2f> &imagePoint);
+	void reconstruction(std::vector<cv::Point3f> &reconstructPoint, const std::vector<cv::Point2f> &projPoint, const std::vector<cv::Point2f> &imagePoint, const std::vector<int> &flag);
 
 	// 3ŽŸŒ³“_ŒQ‚Ì•`‰æ
 	void pointCloudRender(const std::vector<cv::Point3f> &reconstructPoint, const std::vector<cv::Point2f> &imagePoint, const cv::Mat &image, std::string &windowName, const cv::Mat& R, const cv::Mat& t);
