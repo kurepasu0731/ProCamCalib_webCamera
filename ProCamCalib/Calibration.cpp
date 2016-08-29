@@ -367,11 +367,11 @@ void Calibration::pointCloudRender(const std::vector<cv::Point3f> &reconstructPo
 		{
 			if(z_buffer.at<double>(pt_y,pt_x) == 0.0 || z_buffer.at<double>(pt_y,pt_x) > reconstructPoint[i].z )
 			{
-				//int image_x = (int)(imagePoint[i].x+0.5);
-				//int image_y = (int)(imagePoint[i].y+0.5);
+				int image_x = (int)(imagePoint[i].x+0.5);
+				int image_y = (int)(imagePoint[i].y+0.5);
 				//ƒJƒƒ‰‰æ‘fã‚ÌF‚ğ•t‚¯‚é
-				int image_x = i % CAMERA_WIDTH;
-				int image_y = (int)(i / CAMERA_WIDTH);
+				//int image_x = i % CAMERA_WIDTH;
+				//int image_y = (int)(i / CAMERA_WIDTH);
 
 				viewer.at<uchar>(pt_y, 3*pt_x+0) = image.at<uchar>(image_y, 3*image_x+0);
 				viewer.at<uchar>(pt_y, 3*pt_x+1) = image.at<uchar>(image_y, 3*image_x+1);

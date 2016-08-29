@@ -43,7 +43,7 @@ int main()
 
 
 	// キャリブレーション用
-	Calibration calib(10, 7, 48.0);
+	Calibration calib(10, 7, 23.0);
 	std::vector<std::vector<cv::Point3f>>	worldPoints;
 	std::vector<std::vector<cv::Point2f>>	cameraPoints;
 	std::vector<std::vector<cv::Point2f>>	projectorPoints;
@@ -63,6 +63,7 @@ int main()
 			// trueで白を投影、falseで通常のディスプレイを表示
 			if(prjWhite){
 				cv::Mat white = cv::Mat(PROJECTOR_WIDTH, PROJECTOR_HEIGHT, CV_8UC3, cv::Scalar(255, 255, 255));
+				//cv::Mat white = cv::imread("chessPattern_1920_1080_76_76_77.png");
 				cv::namedWindow("white_black", 0);
 				Projection::MySetFullScrean(DISPLAY_NUMBER, "white_black");
 				cv::imshow("white_black", white);

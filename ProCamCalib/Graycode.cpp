@@ -5,7 +5,7 @@ GRAYCODE::GRAYCODE(WebCamera camera)
 	webcamera = camera;
 	GC = "Graycode";
 	MP = "Measure";
-	delay = 200; //ここを小さくして、frameをいっぱい読み込む(新しいのを読む)と、グレイコード投影が早くなる
+	delay = 150; //ここを小さくして、frameをいっぱい読み込む(新しいのを読む)と、グレイコード投影が早くなる
 	g = new Graycode();
 	c = new correspondence();
 	c->code_map = new std::map<int, cv::Point>();
